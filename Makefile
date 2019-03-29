@@ -3,27 +3,26 @@ P2BIN=p2bin
 SRC=patch.s
 BSPLIT=bsplit
 MAME=mame
-ROMDIR=/home/moffitt/.mame/roms/espradej
 
 ASFLAGS=-i . -n -U
 
-.PHONY: espradej
+.PHONY: prg.u29
 
-all: prg.bin
+all: prg.u29
 
 prg.o: prg.orig
 	$(AS) $(SRC) $(ASFLAGS) -o prg.o
 
-prg.bin: prg.o
-	$(P2BIN) $< $@ -r \$$-0x7FFFF
-	$(BSPLIT) x prg.bin prg.u29
+prg.u29: prg.o
+	$(P2BIN) $< prg.bin -r \$$-0x7FFFF
+	$(BSPLIT) x prg.bin $@
 	rm prg.o
 	rm prg.bin
 
-test: prg.bin
+test: prg.u29
 	$(MAME) -debug donpachij
 
 clean:
-	@-rm prg.bin
-	@-rm prg.o
+	@-rm -f prg.bin
+	@-rm -f prg.o
 	bsplit x prg.orig prg.u29

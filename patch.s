@@ -7,34 +7,7 @@
 ; Free space to put new routines
 ROM_FREE = $043C00
 
-; Port definitions and useful RAM values
-;INPUT_P1 = $101254
-;INPUT_P2 = $101256
-
-; 0x3 for 1P free play, 0xC for 2P free play
-COINAGE_CFG = $101287
-
-; # credits inserted; CRED_COUNT+2 shadows it to detect changes
-CRED_COUNT = $10139A
-
-; Game state tables
-SC_STATE = $1018EC
-
-; State table values match ESP Ra.De. exactly
-S_INIT        = $0
-S_TITLE       = $1
-S_HISCORE     = $2
-S_DEMOSTART   = $3
-S_TITLE_START = $4
-S_DEMO        = $5
-S_INGAME_P2   = $6
-S_INGAME_P1   = $7
-S_CONTINUE    = $8
-S_CHARSEL     = $B
-S_CAVESC      = $C
-S_ATLUSSC     = $D
-
-; Checksum disable
+; Checksum disable ----------------------------------------
 checksum_disable:
 	ORG	$03429A
 	bra	$0342A8
@@ -42,7 +15,7 @@ checksum_disable:
 ; Macro for checking free play ----------------------------
 FREEPLAY macro
 	move.l	d1, -(sp)
-	move.b	(COINAGE_CFG).l, d1
+	move.b	($101287).l, d1 ; Configuration byte.
 	andi.b	#$F0, d1
 	cmpi.b	#$30, d1 ; Check if 1P freeplay enabled
 	beq	.freeplay_is_enabled
@@ -60,9 +33,7 @@ POST macro
 	move.l	(sp)+, d1
 	ENDM
 
-; Menu stuff ---------------------------------------------
-
-; replace 3 coins 1 play setting
+; Menu labels --------------------------------------------
 menu_labels:
 	ORG	$0024BD
 	DC.B	"     FREE PLAY      "
@@ -124,8 +95,9 @@ credit_attract_label:
 	.align	2
 credit_injection_override:
 	FREEPLAY
+	; Have 9 credits in the machine always.
 	move.w	#9, ($10139A).l
-	move.w	#9, ($10139C).l
+	move.w	#9, ($10139C).l  ; Shadow count.
 	btst	#5, ($101398 + 1).l
 	jmp	($00CBE2).l
 
